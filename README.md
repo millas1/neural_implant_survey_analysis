@@ -1,6 +1,8 @@
 # Neural Implant Survey Analysis
 This project is part of 105.708 Data Acquisition and Survey Methods at TU Wien. We surveyed fellow students about their attitudes toward neural implants.
 
+The authors formed Group 13 for this assignment (Assignment 2).
+
 Main tasks include:
 - Exploratory Data Analysis: Choose appropriate methods to explore the categorical and quantitative features in your data set (one visualization per research question). Briefly explain the methods and comment on your findings.
 - Descriptive Inference: Compute suitable summary statistics and display the results in a table.
