@@ -1,0 +1,75 @@
+#setwd("C:/Users/YOUR_USER/YOUR_PATH/")
+library(tidyverse)
+library(stringr)
+library(ggplot2)
+library(dplyr)
+
+all_results = read.csv("Survey_results_2026.csv")
+dim(all_results)
+colnames(all_results)
+
+df = all_results %>% select(starts_with("DQ") | starts_with("G13"))
+colnames(df) = c("age", "gender", "academic_program", "Q1", "Q2", "Q3")
+
+dim(df)
+str(df)
+head(df)
+
+
+### Q1 ###
+# After 10 years of successful safety testing, on a scale of 1 to 5 (1 = Strongly Disagree, 5 = Strongly Agree), would you undergo a surgical procedure to implant a cognitive-enhancement chip in your brain? #
+table(df$Q1)
+round(prop.table(table(df$Q1)), 4)
+barplot(prop.table(table(df$Q1)), ylim = c(0,0.4))
+
+
+### Q2 ###
+# After 10 years of successful safety testing, what ratio of the general population (0-100%) do you believe would choose to get the implant? #
+table(df$Q2)
+round(prop.table(table(df$Q2))*100, 2)
+hist(df$Q2, ylim = c(0, 60))
+hist(df$Q2,  freq = FALSE, ylim = c(0, 0.03))
+
+
+### Comparison Q1 and Q2 ###
+mean(df$Q2)
+median(df$Q2)
+
+cs = cumsum(table(df$Q1)[5:1])
+round(prop.table(cs)*100,2)
+# --> While people estimated that around 30% of people would get the implant, 
+# only 7.31% of people said that they would strongly agree or agree to get the implant.
+# If we count the neutral people as well, it would still only be 17.85%
+
+
+### Q3 ###
+# Which of the following do you perceive as the most immediate risks of neural-link technology? (Select up to 3) #
+
+#--> A lot of people did not listen to the question and selected more than 3,
+# but the analysis stays the same regardless, so it does not matter too much.
+
+# Count how many values each person chose
+ch1 = ";"
+print("Count for character ;")
+count = str_count(df$Q3,ch1)
+count
+table(count)
+
+df_long <- df %>%
+  separate_rows(Q3, sep = ";")
+df_long %>% count(Q3, sort = TRUE) %>%
+  mutate(percent = (n / nrow(df_long))*100)
+
+barplot(table(df_long$Q3), las = 2)
+
+#################
+print(dim(df))
+
+program_split <- df %>% count(academic_program, sort = TRUE)
+gender_split <- df %>% count(gender, sort = TRUE)
+
+df %>% 
+  count(age) %>%  # Keeps chronological/alphabetical order
+  ggplot(aes(x = age, y = n)) +
+  geom_col(fill = "skyblue", color = "black") +
+  labs(title = "Age Distribution", x = "Age Group", y = "Count")
