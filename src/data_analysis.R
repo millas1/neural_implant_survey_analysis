@@ -4,6 +4,17 @@ library(stringr)
 library(ggplot2)
 library(dplyr)
 
+if (!requireNamespace("janitor", quietly = TRUE)) {
+  install.packages("janitor")
+}
+
+if (!requireNamespace("patchwork", quietly = TRUE)) {
+  install.packages("patchwork")
+}
+
+library(janitor)
+library(patchwork)
+
 load_orig_dataset <- function(){
   
   all_results = read.csv("Survey_results_2026.csv")
@@ -31,6 +42,28 @@ show_rundown <- function(df){
 all_results <- load_orig_dataset()
 df <- create_g13_subset(all_results)
 show_rundown(df)
+
+### General Exploration before Question-specific Analysis
+df %>% 
+  tabyl(academic_program, gender) %>% 
+  adorn_totals(where = c("row", "col"))
+
+p1 <- df %>% 
+  count(age, gender) %>% 
+  ggplot(aes(x = age, y = n, fill = gender)) + 
+  geom_col(color = "black") + 
+  labs(title = "Age Distribution by Gender", x = "Age Group", y = "Count", fill = "Gender") + 
+  theme_minimal()
+
+p2 <- df %>% 
+  count(age, academic_program) %>% 
+  ggplot(aes(x = age, y = n, fill = academic_program)) + 
+  geom_col(color = "black") + 
+  labs(title = "Age Distribution by Academic Program", x = "Age Group", y = "Count", fill = "Program") + 
+  theme_minimal()
+
+# Displaying distribution of gender and program over age groups
+p1 + p2
 
 ### Q1 ###
 # After 10 years of successful safety testing, on a scale of 1 to 5 (1 = Strongly Disagree, 5 = Strongly Agree), would you undergo a surgical procedure to implant a cognitive-enhancement chip in your brain? #
