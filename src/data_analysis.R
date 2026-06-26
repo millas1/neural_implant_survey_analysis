@@ -120,15 +120,3 @@ df_long %>% count(Q3, sort = TRUE) %>%
   mutate(percent = (n / nrow(df_long))*100)
 
 barplot(table(df_long$Q3), las = 2)
-
-#################
-print(dim(df))
-
-program_split <- df %>% count(academic_program, sort = TRUE)
-gender_split <- df %>% count(gender, sort = TRUE)
-
-df %>% 
-  count(age) %>%  # Keeps chronological/alphabetical order
-  ggplot(aes(x = age, y = n)) +
-  geom_col(fill = "skyblue", color = "black") +
-  labs(title = "Age Distribution", x = "Age Group", y = "Count")
