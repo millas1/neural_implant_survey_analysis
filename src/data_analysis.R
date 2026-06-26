@@ -4,17 +4,33 @@ library(stringr)
 library(ggplot2)
 library(dplyr)
 
-all_results = read.csv("Survey_results_2026.csv")
-dim(all_results)
-colnames(all_results)
+load_orig_dataset <- function(){
+  
+  all_results = read.csv("Survey_results_2026.csv")
+  dim(all_results)
+  colnames(all_results)
+  
+  return (all_results)
+}
 
-df = all_results %>% select(starts_with("DQ") | starts_with("G13"))
-colnames(df) = c("age", "gender", "academic_program", "Q1", "Q2", "Q3")
+create_g13_subset <- function(all_results){
+  
+  df = all_results %>% select(starts_with("DQ") | starts_with("G13"))
+  colnames(df) = c("age", "gender", "academic_program", "Q1", "Q2", "Q3")
+  
+  return(df)
+}
 
-dim(df)
-str(df)
-head(df)
 
+show_rundown <- function(df){
+  dim(df)
+  str(df)
+  head(df)
+}
+
+all_results <- load_orig_dataset()
+df <- create_g13_subset(all_results)
+show_rundown(df)
 
 ### Q1 ###
 # After 10 years of successful safety testing, on a scale of 1 to 5 (1 = Strongly Disagree, 5 = Strongly Agree), would you undergo a surgical procedure to implant a cognitive-enhancement chip in your brain? #
