@@ -52,14 +52,16 @@ gender_over_age_hist <- df %>%
   count(age, gender) %>% 
   ggplot(aes(x = age, y = n, fill = gender)) + 
   geom_col(color = "black") + 
-  labs(title = "Age Distribution by Gender", x = "Age Group", y = "Count", fill = "Gender") + 
+  labs(title = "Age Distribution by Gender", 
+       x = "Age Group", y = "Count", fill = "Gender") + 
   theme_minimal()
 
 prog_over_age_hist <- df %>% 
   count(age, academic_program) %>% 
   ggplot(aes(x = age, y = n, fill = academic_program)) + 
   geom_col(color = "black") + 
-  labs(title = "Age Distribution by Academic Program", x = "Age Group", y = "Count", fill = "Program") + 
+  labs(title = "Age Distribution by Academic Program", 
+       x = "Age Group", y = "Count", fill = "Program") + 
   theme_minimal()
 
 # Displaying distribution of gender and program over age groups
