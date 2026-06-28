@@ -1,0 +1,163 @@
+---
+title: "Data_Analysis"
+author: "Sara Milla - 12432969"
+date: "2026-06-28"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Setup
+```{r}
+setwd("C:/Users/saram/OneDrive/COURSES/DASM")
+library(tidyverse)
+library(stringr)
+library(ggplot2)
+library(dplyr)
+
+if (!requireNamespace("janitor", quietly = TRUE)) {
+  install.packages("janitor")
+}
+
+if (!requireNamespace("patchwork", quietly = TRUE)) {
+  install.packages("patchwork")
+}
+if (!requireNamespace("survey", quietly = TRUE)) {
+  install.packages("survey")
+}
+if (!requireNamespace("car", quietly = TRUE)) {
+  install.packages("car")
+}
+
+library(janitor)
+library(patchwork)
+library(car)
+
+load_orig_dataset <- function(){
+  
+  all_results = read.csv("Survey_results_2026.csv")
+  dim(all_results)
+  colnames(all_results)
+  
+  return (all_results)
+}
+
+create_g13_subset <- function(all_results){
+  
+  df = all_results %>% select(starts_with("DQ") | starts_with("G13"))
+  colnames(df) = c("age", "gender", "academic_program", "Q1", "Q2", "Q3")
+  
+  return(df)
+}
+
+
+show_rundown <- function(df){
+  dim(df)
+  str(df)
+  head(df)
+}
+
+all_results <- load_orig_dataset()
+df <- create_g13_subset(all_results)
+show_rundown(df)
+```
+
+General Exploration before Question-specific Analysis
+
+```{r}
+df %>% 
+  tabyl(academic_program, gender) %>% 
+  adorn_totals(where = c("row", "col"))
+
+gender_over_age_hist <- df %>% 
+  count(age, gender) %>% 
+  ggplot(aes(x = age, y = n, fill = gender)) + 
+  geom_col(color = "black") + 
+  labs(title = "Age Distribution by Gender", 
+       x = "Age Group", y = "Count", fill = "Gender") + 
+  theme_minimal()
+
+prog_over_age_hist <- df %>% 
+  count(age, academic_program) %>% 
+  ggplot(aes(x = age, y = n, fill = academic_program)) + 
+  geom_col(color = "black") + 
+  labs(title = "Age Distribution by Academic Program", 
+       x = "Age Group", y = "Count", fill = "Program") + 
+  theme_minimal()
+
+# Displaying distribution of gender and program over age groups
+gender_over_age_hist + prog_over_age_hist
+```
+
+We observe that Data Science students span a wider range of age categories compared to Business Informatics, where no students from the age groups 18-20 or over 35 participated in the survey. Data Science has a larger share of students with 177 compared to 32 for Business Informatics.Furthermore, the distribution of female students has a different shapecompared to the overall distribution, as the size of the 21-23 age groupexceeds that of the 23-25 group for females. As male students, accounting for 156 out of 209 observations of the sample, appear more in 23-25 compared to 21-23, they dominate the overall shape too.
+
+#Question 1
+After 10 years of successful safety testing, on a scale of 1 to 5 (1 = Strongly Disagree, 5 = Strongly Agree), would you undergo a surgical procedure to implant a cognitive-enhancement chip in your brain?
+
+```{r}
+table(df$Q1)
+round(prop.table(table(df$Q1)), 4)
+barplot(prop.table(table(df$Q1)), ylim = c(0,0.4))
+```
+#Question 2
+After 10 years of successful safety testing, what ratio of the general population (0-100%) do you believe would choose to get the implant? 
+```{r}
+table(df$Q2)
+round(prop.table(table(df$Q2))*100, 2)
+hist(df$Q2, ylim = c(0, 60))
+hist(df$Q2,  freq = FALSE, ylim = c(0, 0.03))
+```
+
+# Q2 analysis
+```{r}
+# Boxplot of Q2 (Estimated Ratio) by Academic Program
+ggplot(df, aes(x = academic_program, y = Q2, fill = academic_program)) +
+  geom_boxplot() +
+  labs(title = "Estimated Implant Adoption by Academic Program",
+       x = "Academic Program",
+       y = "Estimated Population Ratio (0-100%)") +
+  theme_minimal()
+
+# Create a summary table grouped by Academic Program
+q2_summary <- df %>%
+  group_by(academic_program) %>%
+  summarise(
+    Count = n(),
+    Mean = round(mean(Q2, na.rm = TRUE), 2),
+    Median = median(Q2, na.rm = TRUE),
+    SD = round(sd(Q2, na.rm = TRUE), 2),
+    Min = min(Q2, na.rm = TRUE),
+    Max = max(Q2, na.rm = TRUE)
+  )
+
+print(q2_summary)
+
+# Fit a survey-weighted linear model for Q2
+q2_weighted_model <- svyglm(Q2 ~ academic_program, design = final_design)
+
+# Get the rigorous summary (coefficients, standard errors, and p-values)
+summary(q2_weighted_model)
+
+```
+Looking at gender
+
+```{r}
+# Boxplot of Q2 by Academic Program AND Gender
+ggplot(df, aes(x = academic_program, y = Q2, fill = gender)) +
+  geom_boxplot() +
+  labs(title = "Estimated Implant Adoption by Program and Gender",
+       x = "Academic Program",
+       y = "Estimated Population Ratio (0-100%)",
+       fill = "Gender") +
+  theme_minimal()
+
+# Fit a survey-weighted linear model for Q2 with an interaction term
+q2_interaction_model <- svyglm(Q2 ~ academic_program * gender, design = final_design)
+
+# View the results
+summary(q2_interaction_model)
+```
+
+
+
